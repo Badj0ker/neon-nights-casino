@@ -138,7 +138,7 @@ function drawBackdrop(ctx: CanvasRenderingContext2D, camera: number, time: numbe
 function drawPlatform(ctx: CanvasRenderingContext2D, p: Rect, camera: number) {
   const x = p.x - camera;
   if (x + p.w < -20 || x > VIEW_W + 20) return;
-  const colors = p.style === "gold"
+  const colors: readonly [string, string, string] = p.style === "gold"
     ? ["#f6c85b", "#815313", "rgba(247,201,92,.65)"]
     : p.style === "chip"
       ? ["#ff276f", "#4e102f", "rgba(255,38,111,.6)"]
@@ -162,7 +162,8 @@ function drawDice(ctx: CanvasRenderingContext2D, enemy: Enemy, camera: number) {
   roundRect(ctx, -25, -25, 50, 50, 10); ctx.fill();
   ctx.shadowBlur = 0; ctx.strokeStyle = "#ff266f"; ctx.lineWidth = 3; roundRect(ctx, -25, -25, 50, 50, 10); ctx.stroke();
   ctx.fillStyle = "#171226";
-  [[-11,-11],[11,-11],[0,0],[-11,11],[11,11]].forEach(([dx,dy]) => { ctx.beginPath(); ctx.arc(dx,dy,4.2,0,Math.PI*2); ctx.fill(); });
+  const pips: ReadonlyArray<readonly [number, number]> = [[-11,-11],[11,-11],[0,0],[-11,11],[11,11]];
+  pips.forEach(([dx,dy]) => { ctx.beginPath(); ctx.arc(dx,dy,4.2,0,Math.PI*2); ctx.fill(); });
   ctx.restore();
 }
 
@@ -178,7 +179,7 @@ function drawFinish(ctx: CanvasRenderingContext2D, camera: number, time: number)
 }
 
 function drawHazards(ctx: CanvasRenderingContext2D, camera: number) {
-  const hazards = [[690,770],[1790,1870],[2330,2410],[2990,3070],[3370,3435],[3800,3880],[4340,4415],[4880,4960],[5430,5510],[5940,6020],[6360,6425],[6865,6945],[7195,7280]];
+  const hazards: ReadonlyArray<readonly [number, number]> = [[690,770],[1790,1870],[2330,2410],[2990,3070],[3370,3435],[3800,3880],[4340,4415],[4880,4960],[5430,5510],[5940,6020],[6360,6425],[6865,6945],[7195,7280]];
   ctx.save(); ctx.translate(-camera, 0);
   hazards.forEach(([start,end]) => {
     ctx.fillStyle = "rgba(255,38,111,.28)"; ctx.fillRect(start, 683, end-start, 37);
@@ -316,8 +317,10 @@ export function NeonRunnerGame() {
       for (const token of tokens) {
         if (token.collected || token.x - camera < -60 || token.x - camera > VIEW_W + 60) continue;
         const bob = Math.sin(time * .004 + token.x) * 6;
+        const tokenImage = images[5];
+        if (!tokenImage) continue;
         ctx.save(); ctx.shadowColor = "#ff266f"; ctx.shadowBlur = 18;
-        ctx.drawImage(images[5], token.x - camera - 23, token.y - 23 + bob, 46, 46); ctx.restore();
+        ctx.drawImage(tokenImage, token.x - camera - 23, token.y - 23 + bob, 46, 46); ctx.restore();
       }
       enemies.forEach((enemy) => { if (enemy.alive) drawDice(ctx, enemy, camera); });
       drawFinish(ctx, camera, time);
@@ -326,6 +329,7 @@ export function NeonRunnerGame() {
         const moving = Math.abs(player.vx) > 25;
         const runIndex = RUN_ORDER[Math.floor(time / 100) % RUN_ORDER.length] ?? 0;
         const sprite = !player.grounded ? images[4] : moving ? images[runIndex] : images[1];
+        if (!sprite) return;
         const drawW = !player.grounded ? 111 : 106;
         const drawH = !player.grounded ? 115 : 105;
         const footY = player.y + PLAYER_H + 5;
