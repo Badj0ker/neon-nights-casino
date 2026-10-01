@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep real-time game simulation and rendering inside the client-mounted canvas component; this preserves SSR-safe routes while maintaining a deterministic fixed-step loop.
